@@ -1,0 +1,20 @@
+
+
+{% macro constructor_param(field_meta) -%}
+    {% for field_name,meta in  field_meta.iteritems() %}{{ field_name }}:{{ meta.type }}{% if field_meta|length != loop.index %},{% endif %}{% endfor %}
+{%- endmacro %}
+
+
+
+{% macro getter(field_name, type) -%}
+    public function get {{ field_name }}():{{ type }}
+    {
+    return _{{ field_name }}
+    }
+    public function set {{ field_name }}(f:{{ type }}):void
+    {
+    _{{ field_name }} = f
+    }
+{%- endmacro %}
+
+

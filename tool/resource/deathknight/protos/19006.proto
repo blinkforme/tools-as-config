@@ -1,0 +1,8 @@
+syntax = "proto2";
+
+//红点协议
+message s2c_19006 {
+    optional int32 red_points = 3;
+}
+
+

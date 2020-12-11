@@ -1,0 +1,14 @@
+
+{% for item in content %}
+import {{item}} from "./{{item}}";
+{% endfor %}
+
+export default class manifest
+{
+    public static cfg_names:Object ={
+            {% for item in content %}
+            "{{item}}":{{item}},
+            {% endfor %}
+    }
+
+}

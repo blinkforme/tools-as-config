@@ -1,0 +1,22 @@
+# -*- coding: utf-8 -*-
+
+
+# 填写自己系统的配表
+TARGET_PATHS = [
+    '你的项目路径/abbey/bin/h5/res/config',
+]
+
+AS3_CLAZZ_TARGET_PATHS = [
+    '你的项目路径/abbey/src/conf/',
+]
+
+
+# LUA服务器配表（不需要导出则注释）
+#SERVER_PATH = './server/data'
+
+
+# PY服务器配表（不需要导出则注释）
+PY_SERVER_PATH = '/Users/peterpuppy/code/trials-server/apps/gamec/config'
+
+# JSON数据路径，PHP使用（不需要导出则注释）
+# JSON_SERVER_PATH = '/Users/peterpuppy/code/trials-server/apps/gamec/config/json'

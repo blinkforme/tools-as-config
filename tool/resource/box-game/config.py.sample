@@ -1,0 +1,13 @@
+﻿# -*- coding: utf-8 -*-
+
+
+# 填写自己系统的配表
+TARGET_PATHS = [
+    'C:/Users/admin/Documents/repo/box-game/box/bin/res/config/'
+]
+
+AS3_CLAZZ_TARGET_PATHS = [
+    'C:/Users/admin/Documents/repo/box-game/box/src/conf/'
+]
+
+CONFIG_MANAGER_PATH = '"./../engine/tool/ConfigManager"'

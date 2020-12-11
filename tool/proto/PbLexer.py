@@ -1,0 +1,296 @@
+# -*- coding: utf-8 -*-
+import re
+import string
+
+T_IDENTITY = 257
+T_MESSAGE = 258
+T_ENUM = 259
+T_STRING = 260
+T_IMPORT = 261
+T_REQUIRED = 262
+T_OPTIONAL = 263
+T_REPEATED = 264
+T_PACKAGE = 265
+T_ATTRIBUTE = 266
+T_NUMBER = 267
+T_BOOLEAN = 268
+T_SYNTAX = 269
+T_OPTION = 270
+T_PUBLIC = 271
+T_WEAK = 272
+T_EXTENSIONS = 274
+T_RESERVED = 275
+T_TO = 276
+T_EXTEND = 277
+T_MAP = 278
+
+KEYWORDS = {
+    "message": T_MESSAGE,
+    "enum": T_ENUM,
+    "import": T_IMPORT,
+    "required": T_REQUIRED,
+    "optional": T_OPTIONAL,
+    "repeated": T_REPEATED,
+    "package": T_PACKAGE,
+    "syntax": T_SYNTAX,
+    "option": T_OPTION,
+    "public": T_PUBLIC,
+    "weak": T_WEAK,
+    "extensions": T_EXTENSIONS,
+    "reserved": T_RESERVED,
+    "to": T_TO,
+    "extend": T_EXTEND,
+    "map": T_MAP,
+}
+
+KEYWORD_TOKENS = set([tk for tk in KEYWORDS.itervalues()])
+
+VAR_NAME_LETTER = string.letters + string.digits + '_'
+VAR_NAME_PATTERN = re.compile(r"^[_a-zA-Z]\w*$")
+
+TOKEN_2_NAME = {key: val for val, key in KEYWORDS.iteritems()}
+
+
+def token2str(tk):
+    if type(tk) == str:
+        return tk
+    return TOKEN_2_NAME[tk]
+
+
+def is_keyword_token(tk):
+    return tk in KEYWORD_TOKENS
+
+
+class ProtoException(Exception):
+    pass
+
+
+class PbLexer():
+    def __init__(self, content, fileName):
+        self.cursor = 0
+        self.content = content
+        self.fileName = fileName
+
+        self.token = None
+        self.value = None
+
+        self.line = 1
+        self.column = 1
+
+        self.index = 0
+
+    def getchar(self):
+        self.index += 1
+
+        if self.index >= len(self.content):
+            return None
+
+        ch = self.content[self.index]
+        self.column += 1
+        return ch
+
+    def ungetchar(self):
+        assert (self.index > 0)
+        self.index -= 1
+        self.column -= 1
+
+    def next(self):
+        token = self.parseToken()
+        self.token = token
+        return token
+
+    def enterNextLine(self):
+        self.line += 1
+        self.column = 1
+
+    def error(self, msg):
+        self.isError = True
+        error_msg = "error at filename={filename} line={line}, column={column}  message={message}" \
+            .format(filename=self.fileName, line=self.line, column=self.column, message=msg)
+        raise Exception(error_msg)
+
+    def readString(self):
+        ret = []
+        ch = self.getchar()
+        while ch != '"':
+            if ch == '\n' or ch is None:
+                self.error('invalid string')
+
+            ret.append(ch)
+            ch = self.getchar()
+
+        return "".join(ret)
+
+    def readLineComment(self):
+        ret = []
+
+        ch = self.getchar()
+        while ch != '\n' and ch is not None:
+            ret.append(ch)
+            ch = self.getchar()
+
+        self.enterNextLine()
+        return "".join(ret)
+
+    def readBlockComment(self):
+        ret = []
+
+        startLine = self.line
+        startColumn = self.column
+
+        ch = self.getchar()
+        while True:
+            if ch is None:
+                self.error('unclosed comment match line %d, column %d' % (startLine, startColumn))
+
+            if ch == '*':
+                chNext = self.getchar()
+                if chNext is None:
+                    raise Exception("unclosed comment match line")
+
+                    self.error("unclosed comment match line %d, column %d" % (startLine, startColumn))
+                elif chNext == '/':
+                    break
+                else:
+                    ret.append(ch)
+                    ch = chNext
+            else:
+                if ch == '\n':
+                    self.enterNextLine()
+
+                ret.append(ch)
+                ch = self.getchar()
+
+        return "".join(ret)
+
+    def readNumber(self):
+        ret = []
+
+        ch = self.getchar()
+        if ch in '+-':
+            ret.append(ch)
+            ch = self.getchar()
+
+        while ch in string.digits:
+            ret.append(ch)
+            ch = self.getchar()
+
+        if ch == '.':
+            ret.append('.')
+            ch = self.getchar()
+
+            while ch in string.digits:
+                ret.append(ch)
+                ch = self.getchar()
+
+        if ch in 'eE':
+            ret.append(ch)
+            ch = self.getchar()
+
+            if ch in '+-':
+                ret.append(ch)
+                ch = self.getchar()
+
+            while ch in string.digits:
+                ret.append(ch)
+                ch = self.getchar()
+
+        self.ungetchar()
+
+        value = "".join(ret)
+        return eval(value)
+
+    def readIdentity(self):
+        ret = []
+
+        ch = self.getchar()
+        while ch is not None and ch in VAR_NAME_LETTER:
+            ret.append(ch)
+            ch = self.getchar()
+
+        self.ungetchar()
+        s = "".join(ret)
+        if VAR_NAME_PATTERN.match(s):
+            return s
+
+        self.column -= len(s)
+        self.error('invalid identity name "%s"' % s)
+
+    def parseToken(self):
+        self.value = None
+
+        while True:
+            ch = self.getchar()
+            if ch is None:
+                break
+
+            elif ch == '\n':
+                self.enterNextLine()
+
+            elif ch in string.whitespace:
+                pass
+
+            elif ch == '/':
+                ch = self.getchar()
+                if ch == '*':  # `/* */`
+                    self.readBlockComment()
+
+                elif ch == '/':  # `//`
+                    ch = self.getchar()
+                    if ch == '@':  # `//@`
+                        return T_ATTRIBUTE
+
+                    else:
+                        self.ungetchar()
+                        self.readLineComment()
+                else:
+                    self.error("invalid symbol '%s'" % ch)
+
+            elif ch == '"':
+                self.value = self.readString()
+                if self.value is None:
+                    break
+                return T_STRING
+
+            elif ch in '.={}<>,;[]()':
+                return ch
+
+            elif ch in '+-':
+                ch = self.getchar()
+                if ch in string.digits:
+                    self.ungetchar()
+                    self.value = self.readNumber()
+                    return T_NUMBER
+
+                else:
+                    self.error("invalid symbol '%s'" % ch)
+
+            elif ch in string.digits:
+                self.ungetchar()
+                self.value = self.readNumber()
+                return T_NUMBER
+
+            elif ch in VAR_NAME_LETTER:
+                self.ungetchar()
+                value = self.readIdentity()
+
+                if value == "true":
+                    self.value = True
+                    return T_BOOLEAN
+
+                elif value == "false":
+                    self.value = False
+                    return T_BOOLEAN
+
+                if value is None:
+                    break
+
+                else:
+                    self.value = value
+                    return KEYWORDS.get(value, T_IDENTITY)
+
+            else:
+                self.error("invalid symbol '%s'" % ch)
+                break
+
+        return None

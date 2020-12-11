@@ -1,0 +1,18 @@
+
+package conf
+{
+
+    {% for item in content %}
+    import conf.{{item}};
+    {% endfor %}
+
+    public class manifest
+    {
+        public static var cfg_names:Object ={
+                {% for item in content %}
+                "{{item}}":{{item}},
+                {% endfor %}
+        }
+
+    }
+}

@@ -1,0 +1,27 @@
+syntax = "proto2";
+
+message goodInfo {
+    required int32 i = 1;
+    required int32 n = 2;
+
+}
+
+message s2c_10004 {
+    required string name = 1;
+    required int32 level = 2;
+    required int32 vip = 3;
+    required int32 vip_exp = 4;
+    required int32 exp = 5;
+    required int32 fish_coin = 6;
+    required int32 battery = 7;
+    required int32 coin = 8;
+    repeated int32 skins = 9;
+    required int32 cskin = 10;
+    required int32 diamond = 11;
+    repeated goodInfo goods = 12;
+    repeated int32 purchased_items = 13;
+    repeated int32 vip_buy = 14;
+
+}
+
+

@@ -1,0 +1,9 @@
+syntax = "proto2";
+
+
+message s2c_14030 {
+    repeated int32 reward_item_ids = 1;
+    repeated int32 reward_item_nums = 2;
+}
+
+

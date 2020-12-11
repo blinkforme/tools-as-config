@@ -1,0 +1,9 @@
+---@class {{sheet_name}}
+{{sheet_name}} =  {
+    {% for item in data_dic %}
+        [{% if is_str %}"{% endif %}{{ item }}{% if is_str %}"{% endif %}] = {{ data_dic[item] }},
+    {% endfor %}
+
+
+
+}

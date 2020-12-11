@@ -1,0 +1,49 @@
+{% import 'macro.html' as macro %}
+
+package conf
+{
+    import {{ CONFIG_MANAGER_PATH }}.ConfigManager;
+
+    import control.LanguageC;
+
+	public class {{ sheet_meta.sheet_name }}
+	{
+        public static function init(sheet:Object):{{ sheet_meta.sheet_name }}
+        {
+            var a:{{ sheet_meta.sheet_name }} = new {{ sheet_meta.sheet_name }}();
+
+            {% for row in  sheet_meta.field_meta.items() %}
+            a._{{ row[0] }}=sheet[{{ row[1].confusion_index }}];
+            {% endfor %}
+
+			return a;
+        }
+        public static function instance(key:Object):{{ sheet_meta.sheet_name }}
+		{
+            return ConfigManager.getConfObject("{{ sheet_meta.sheet_name }}",key) as {{ sheet_meta.sheet_name }};
+		}
+
+
+        {% for row in  sheet_meta.field_meta.items() %}
+        public var _{{ row[0] }}:{{ row[1].as3_type }};
+
+        public function get {{ row[0] }}(){
+            var lang_field = "_"+"{{ row[0] }}_" + LanguageC.instance.lang
+            var default_field = "_" + "{{ row[0] }}"
+            if(this[lang_field]){
+                return this[lang_field]
+            }else{
+                return this[default_field]
+            }
+        }
+        {% endfor %}
+
+
+
+
+{#        {% for field_name,meta in  sheet_meta.field_meta.iteritems() %}#}
+{#        {{ macro.getter( field_name , meta.as3_type) }}#}
+{#        {% endfor %}#}
+
+	}
+}

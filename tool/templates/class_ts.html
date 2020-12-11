@@ -1,0 +1,25 @@
+{% import 'macro.html' as macro %}
+import ConfigManager from {{ CONFIG_MANAGER_PATH }}
+export default class {{ sheet_meta.sheet_name }}
+{
+    public static init(sheet:any):{{ sheet_meta.sheet_name }}
+    {
+        let a = new {{ sheet_meta.sheet_name }}();
+
+        {% for row in  sheet_meta.field_meta.items() %}
+        a.{{ row[0] }}=sheet[{{ row[1].confusion_index }}];{% endfor %}
+
+        return a;
+    }
+
+    public static instance(key:any):{{ sheet_meta.sheet_name }}
+	{
+        return ConfigManager.getConfObject("{{ sheet_meta.sheet_name }}",key);
+	}
+
+
+    {% for row in  sheet_meta.field_meta.items() %}
+    public {{ row[0] }}:{{ row[1].as3_type }};{% endfor %}
+
+
+}

@@ -1,0 +1,107 @@
+package pbproto
+{
+    import protobuf.reader;
+    import protobuf.map;
+    import protobuf.writer;
+
+    public class {{message.name}}
+    {
+
+        {% for m in message.members %}
+            {% if m.is_repeated() %}
+            public var {{ m.name }}: Array = [];
+            {% elif m.is_map()%}
+            public var {{ m.name }}: Object = {};
+            {% else %}
+            public var {{ m.name }}: {{ m.to_as3_type() }};
+            {% endif %}
+        {% endfor %}
+
+
+        public  function serializeBinary(writer,code)
+        {
+            {{ message.name }}.serializeBinaryToWriter(this, writer);
+            return writer.getResultBufferWithCode(code);
+        }
+
+        public  static function serializeBinaryToWriter(message, writer)
+        {
+            var f = null;
+            {% for m in message.members %}
+
+            f = message.{{ m.name }};
+            {% if m.is_repeated() %}
+                if (f.length > 0)
+            {% else %}
+                if(f != null)
+            {% endif %}
+            {
+                 {% if m.is_single_type() %}
+                   writer.{{ m.to_as3_writer_func() }}(
+                            {{ m.index }},
+                            f
+                    );
+                {% else %}
+
+               writer.{{ m.to_as3_writer_func() }}(
+                            {{ m.index }},
+                            f,
+                            {{ m.type }}.serializeBinaryToWriter
+                    );
+                {% endif %}
+
+            }
+            {% endfor %}
+        }
+
+
+        public static function deserializeBinary(bytes:Uint8Array)
+        {
+            var r:reader = new reader(bytes);
+
+            var msg = new {{message.name}}();
+
+            return {{message.name}}.deserializeBinaryFromReader(msg, r)
+        }
+
+        public static function deserializeBinaryFromReader(msg:{{message.name}}, reader:reader)
+        {
+            while (reader.nextField())
+            {
+                var field = reader.getFieldNumber();
+                switch (field)
+                {
+                    {% for m in message.members %}
+                    case {{ m.index }}:
+                        {% if m.is_repeated() %}
+                            {% if m.is_single_type() %}
+                            msg.{{ m.name }}.push(reader.{{ m.to_as3_reader_func() }}())
+                            {% else %}
+                            var item:{{ m.type }} = new {{ m.type }}();
+                            reader.readMessage(item, {{ m.type }}.deserializeBinaryFromReader)
+                            msg.{{ m.name }}.push(item);
+                            {% endif %}
+                        {% elif m.is_map() %}
+                            reader.readMessage(msg.{{ m.name }}, function(message, reader) {
+                                map.deserializeBinary(message, reader, reader.{{ m.to_as3_map_key_reader_func() }}, reader.{{ m.to_as3_map_value_reader_func() }}, {{ m.to_as3_map_constructor_func() }}, 0);
+                            });
+                        {% else %}
+                            {% if m.is_single_type() %}
+                            msg.{{ m.name }} = reader.{{ m.to_as3_reader_func() }}();
+                            {% else %}
+
+                            var item:{{ m.type }} = new {{ m.type }}();
+                            reader.readMessage(item, {{ m.type }}.deserializeBinaryFromReader)
+                            msg.{{ m.name }} = item
+                            {% endif %}
+                        {% endif %}
+                        break
+                    {% endfor %}
+                }
+            }
+            return msg
+        }
+
+
+    }
+}

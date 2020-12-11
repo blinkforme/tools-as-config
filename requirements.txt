@@ -1,0 +1,10 @@
+xlrd==1.1.0
+
+jinja2==2.9.6
+
+tinify
+
+six
+
+pandas
+

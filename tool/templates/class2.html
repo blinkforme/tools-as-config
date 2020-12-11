@@ -1,0 +1,92 @@
+{% import 'macro.html' as macro %}
+package conf
+{
+    import {{ CONFIG_MANAGER_PATH }}.ConfigManager
+	public class {{ sheet_meta.sheet_name }}
+	{
+
+        {% for row in  sheet_meta.field_meta.items() %}
+        public var {{ row[0] }}:{{ row[1].as3_type }};{% endfor %}
+
+
+        public function initConfig(sheet:Object):{{ sheet_meta.sheet_name }}
+        {
+            {% for row in  sheet_meta.field_meta.items() %}
+            this.{{ row[0] }}=sheet[{{ row[1].confusion_index }}];{% endfor %}
+        }
+
+        public static function instance(key:Object):{{ sheet_meta.sheet_name }}
+		{
+            return ConfigManager.getConfObject("{{ sheet_meta.sheet_name }}",key + "") as {{ sheet_meta.sheet_name }};
+		}
+
+
+        public function nextKey():String
+        {
+        {% if sheet_meta.field_meta["id"].as3_type == "int" %}
+             return parseInt(id) +1 + ""
+        {% else %}
+            return null
+        {% endif %}
+        }
+
+        public function prevKey():String
+        {
+        {% if sheet_meta.field_meta["id"].as3_type == "int" %}
+             return parseInt(id) - 1 + ""
+        {% else %}
+            return null
+        {% endif %}
+        }
+
+
+
+        public function haveNext():Boolean
+        {
+        {% if sheet_meta.field_meta["id"].as3_type == "int" %}
+             var nextObj:{{ sheet_meta.sheet_name }} = {{ sheet_meta.sheet_name }}.instance(nextKey())
+            if(nextObj){
+                return true
+            }else{
+                return false
+            }
+        {% else %}
+            return false
+        {% endif %}
+        }
+
+        public function getNext():{{ sheet_meta.sheet_name }}
+        {
+        {% if sheet_meta.field_meta["id"].as3_type == "int" %}
+            return {{ sheet_meta.sheet_name }}.instance(nextKey())
+        {% else %}
+            return null
+        {% endif %}
+        }
+
+        public function havePrev():Boolean
+        {
+        {% if sheet_meta.field_meta["id"].as3_type == "int" %}
+             var prevObj:{{ sheet_meta.sheet_name }} = {{ sheet_meta.sheet_name }}.instance(prevKey())
+            if(prevObj){
+                return true
+            }else{
+                return false
+            }
+        {% else %}
+            return false
+        {% endif %}
+        }
+
+        public function getPrev():{{ sheet_meta.sheet_name }}
+        {
+        {% if sheet_meta.field_meta["id"].as3_type == "int" %}
+            return {{ sheet_meta.sheet_name }}.instance(prevKey())
+        {% else %}
+            return null
+        {% endif %}
+        }
+
+
+	}
+}

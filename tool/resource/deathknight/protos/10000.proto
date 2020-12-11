@@ -1,0 +1,8 @@
+syntax = "proto2";
+
+
+message s2c_10000 {
+    required string name = 1;
+}
+
+

@@ -1,0 +1,42 @@
+# -*- coding: utf-8 -*-
+
+
+"""
+工作流程
+
+* 清空TARGET_PATH目录的所有文件
+* 复制ABS_PATH目录所有文件到TARGET_PATH目录
+* 拷贝COPY_FILES中的文件
+* 根据MAIN_JS_PATH的MD5值，替换INDEX_HTMl_PATH 中的JS
+* 计算TARGET_PATH中所有文件的MD5值
+* 生成替换清单MANIFEST_PATH
+
+"""
+pmap = [
+    {
+        # 路径前缀，下面参数都会加上这个前缀，不需要前缀填空字符串
+        "PREFIX": "/Users/peterpuppy/code/client/abbey/release/layaweb",
+        "COPY_FILES": {
+            "scr_compress/index.html": "byh5client/index.html",
+            "export/Main.max.js": "scr_compress/Main.max.js"
+        },
+        "ABS_PATH": "scr_compress",
+        "TARGET_PATH": "byh5client",
+        "MANIFEST_PATH": "byh5client",
+
+        "INDEX_HTMl_PATH": "byh5client/index.html",
+        "MAIN_JS_PATH": "scr_compress/Main.max.js"
+    },
+    {
+        "PREFIX": "",
+        "COPY_FILES": {
+            "./server/cfg_anicollision.lua": "./test2/cfg_anicollision.lua"
+        },
+        "ABS_PATH": "./test/",
+        "TARGET_PATH": "./test2",
+        "MANIFEST_PATH": "./",
+
+        "INDEX_HTMl_PATH": "./test2/a.txt",
+        "MAIN_JS_PATH": "./test2/x/b.txt"
+    }
+]

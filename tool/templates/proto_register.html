@@ -1,0 +1,14 @@
+package pbproto
+{
+    import laya.utils.ClassUtils;
+
+    public class ProtoClassRegister
+    {
+        public static function register_proto_class()
+        {
+            {% for message in messages %}
+            ClassUtils.regClass("{{ message.name }}", {{ message.name }})
+            {% endfor %}
+        }
+    }
+}

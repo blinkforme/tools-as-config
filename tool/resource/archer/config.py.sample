@@ -1,0 +1,13 @@
+﻿# -*- coding: utf-8 -*-
+
+
+# 填写自己系统的配表
+TARGET_PATHS = [
+    '你的项目路径E:/work/kapai/bin/res/config',
+]
+
+AS3_CLAZZ_TARGET_PATHS = [
+    '你的项目路径E:/work/kapai/bin/res/config',
+]
+
+CONFIG_MANAGER_PATH = "engine.tool"
